@@ -1,0 +1,36 @@
+{
+"results_base_dir": "/home/hruiz/Documents/PROJECTS/DARWIN/Data_Darwin/Devices/BRAINSPY_DATA/DARWIN/darwin_training_batches3300_50s_50Hz_zeroPhase_2020_06_26_140017/",
+"experiment_name": "TEST_runtime",
+"algorithm": "gradient_descent",
+"hyperparameters": {
+    "nr_epochs": 10,
+    "batch_size": 4096,
+    "optimizer":"adam",
+    "betas":[0.99,0.999],
+    "learning_rate": 0.0003,
+    "stop_threshold": 0.000001,
+    "save_interval": 60
+    },
+"processor": {
+    "architecture":"single_device",
+    "platform": "simulation",
+    "processor_type": "nn",
+    "torch_model_dict": {
+        "hidden_sizes": [15],
+        "D_in": 7,
+        "D_out": 1,
+        "activation": "relu"
+        }
+    },
+"checkpoints": {
+    "use_checkpoints": true,
+    "save_dir": "training_checkpoints",
+    "save_interval": 20
+    },
+"data": {
+    "training_data_path": "postprocessed_data.npz",
+    "test_data_path": "/home/hruiz/Documents/PROJECTS/DARWIN/Data_Darwin/Devices/BRAINSPY_DATA/DARWIN/darwin_testdata_batches1300_50s_50Hz_2020_06_28_141748/postprocessed_data.npz",
+    "validation_size": 0.1, 
+    "steps": 3
+    }
+}
