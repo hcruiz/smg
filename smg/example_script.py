@@ -3,8 +3,8 @@ This is an example script showing the explicit usage of the modules in the SMG p
 The intended usage is for general datasets, loss/cost functions, optimisers and models, by modifiying
 the script accordingly. This flexibility is intended to aid research in surrgate models for a variety of
 nanoelectronic devices.
-If the use case is simply to generate an establioshed DNPU surrogate model,
-the recommendation is to use the dnpuSMG class and the smg_notebook.
+If the use case is simply to generate an established DNPU surrogate model,
+the recommendation is to use the SMG class in smg.generator and the notebooks.
 '''
 import os
 import torch

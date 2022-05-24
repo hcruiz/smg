@@ -1,15 +1,18 @@
 '''
-This class is intended as a convenience to create an established DNPU surrogate model (SM).
-This class handles the testset separately from the validation and training sets. Due
-to the nature of the data acquisition procedure.  
-The output of the SM is scaled down with an amplification factor used in the measurements. 
-This means that the output of the model is not in nA (the units of the raw data) and 
-it has to be scaled back. For this reason, the performance metrics and the handling of the 
-predictions require some special attention in this class.
+This class is intended as a convenience to create a surrogate model (SM).
+This class handles the testset separately from the validation and training sets.
+
 Notes:
- * The training and validation errors shown are not in the corresponding units of the device output.
- * If the mse function in model.performance is used, the result must be scaled to (amplification)**2. The 
-    amplification is found in the corresponding sampler configs (yaml/json file used to process IO.dat)
+ * The output is usually scaled down with an amplification factor used in the 
+ measurements. Thus, training and validation errors shown are usually not in the
+ corresponding units of the device output.
+ * If the mse function in model.performance is used, the result must be scaled 
+ with (amplification)**2 to obtain the correct units.
+ * The amplification must be available in the corresponding sampler configs
+ * If no amplification is found, it is set to 1. In this case, self.predictions
+ is equivalent to the network's output. 
+ * Besides the subtelty of the amplification requirement, SMG is for general 
+ purpose to train neural networks for regression with MSE loss.  
 '''
 import os
 import torch
@@ -23,10 +26,9 @@ from smg.model.train import Trainer
 from smg.utils.plotter import plot_all
 from smg.model.pytorch import TorchHandler
 from smg.utils.io import create_directory, savejson
-from smg.dnpu.dataset import dnpuData
 
 
-class dnpuSMG():
+class SMG():
     def __init__(self, configs):
         self.configs = configs
         if "amplification" in configs["data"].keys():
@@ -47,13 +49,19 @@ class dnpuSMG():
             self.configs["training"]["save_dir"] = self.configs["rootdir"]
         self.trainer.set_training(self.configs["training"], optim)
 
-    def get_data(self, splits=[0.8, 0.2]):
-        dataset = dnpuData(self.configs["data"])
-        split = [int(len(dataset)*splits[0])+1, int(len(dataset)*splits[1])]
-        print(f"Splitting data in {split}")
-        assert sum(split) == len(dataset), ValueError(
-            "The sum of the splits is not the same as the number of samples")
-        trainset, valset = torch.utils.data.random_split(dataset, split)
+    def set_dataloader(self, dataset, splits=[0.8, 0.2], verbose=True):
+        try:
+            split = [int(len(dataset)*splits[0])+1,
+                     int(len(dataset)*splits[1])]
+            trainset, valset = torch.utils.data.random_split(dataset, split)
+        except ValueError:
+            if verbose:
+                print("Split does not match number of samples. Trying alternative split.")
+            split = [int(len(dataset)*splits[0]), int(len(dataset)*splits[1])]
+            trainset, valset = torch.utils.data.random_split(dataset, split)
+
+        if verbose:
+            print(f"Splitting data in {split}")
         self.trainset = DataLoader(
             trainset, batch_size=self.configs["data"]["batch_size"], shuffle=True)
         self.valset = DataLoader(
@@ -77,7 +85,7 @@ class dnpuSMG():
                  save_dir=save_dir, show=show)
 
 
-def explorer(trials, module, configs):
+def explorer(trials, module, dataset, configs):
     '''Performs several training runs for a given model class and configs.
     Args: 
         trials: Number of runs to perform.
@@ -92,8 +100,8 @@ def explorer(trials, module, configs):
     TODO: Allow for saving all runs in root directory.
     '''
 
-    smg = dnpuSMG(configs)
-    smg.get_data()
+    smg = SMG(configs)
+    smg.set_dataloader(dataset)
     costs = np.zeros((trials, configs["training"]["nr_epochs"]))
     params = deque(maxlen=trials)
 
@@ -116,16 +124,20 @@ def explorer(trials, module, configs):
 if __name__ == '__main__':
     from smg.utils.io import load_configs
     from smg.model.constructor import FCNN
+    from smg.dnpu.dataset import dnpuData
+
     # configs = load_configs("configs/smg_configs_fcnn.json")
     configs = load_configs("tmp/DUMP/testing_smg/smg_configs.json")
     configs["rootdir"] = "tmp/DUMP/testing_dnpugen"
+
+    # A single training run
     model = FCNN(configs["model"])
-    smg = dnpuSMG(configs)
+    smg = SMG(configs)
+    dataset = dnpuData(smg.configs["data"])
     smg.set_trainer(model)
-    smg.get_data()
+    smg.set_dataloader(dataset)
     smg.generate(show=True)
 
     # # You can make several runs to explore training
-    # configs = load_configs("tmp/DUMP/testing_smg/smg_configs.json")
     # configs["rootdir"] = "tmp/DUMP/testing_explorer"
-    # final_dict = explorer(3, FCNN, configs)
+    # final_dict = explorer(3, FCNN, dataset, configs)

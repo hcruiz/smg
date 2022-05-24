@@ -1,5 +1,5 @@
 {
-    "rootdir": "tmp/results/FCNN/02032022",
+    "rootdir": "tmp/DUMP",
     "data": {
         "location": "tmp/example_data/example_3/processed_data.npz",
         "steps": 3,

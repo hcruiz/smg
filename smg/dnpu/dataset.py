@@ -6,10 +6,18 @@ from smg.model.pytorch import TorchHandler
 
 
 class dnpuData(Dataset):
-    def __init__(self, configs):
+    '''
+    Note: 
+    The output is scaled down with an amplification factor used in the measurements. 
+    This is done for easier training of the SM and means that the output of the 
+    model is not in nA (the units of the raw data). Thus, the predictions of the 
+    SM must be scaled with the amplification. For this reason, the performance 
+    metrics and the handling of the predictions require some special attention.'''
+
+    def __init__(self, configs,verbose=True):
         self.path = configs["location"]
         inputs, outputs, self.info = loadnpy(
-            self.path, configs["steps"])
+            self.path, steps=configs["steps"], verbose=verbose)
         try:
             outputs /= configs['amplification']
         except KeyError:

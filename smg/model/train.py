@@ -101,7 +101,7 @@ class Trainer():
             self._checkpoint(epoch)
             if verbose:
                 looper.set_description(
-                    f' Epoch: {epoch} | Training Error:{self.train_costs[-1]:3.6f} | Val. Error:{self.val_costs[-1]:3.6f}')
+                    f'Train. loss:{self.train_costs[-1]:3.5f} | Val. loss:{self.val_costs[-1]:3.4f}')
 
         savemodel(self.save_dir, 'final_model', self.network)
         np.savez(os.path.join(self.save_dir, 'training_history'),
@@ -153,6 +153,7 @@ class Trainer():
         plt.xlabel('Epochs')
         plt.ylabel("Loss")
         plt.legend()
+        plt.yscale("log")
         plt.tight_layout()
         plt.savefig(os.path.join(self.save_dir, "loss_profiles"), format='svg')
         if show:

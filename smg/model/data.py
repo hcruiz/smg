@@ -15,15 +15,16 @@ def loadraw(data_directory):
     return inputs, outputs, configs
 
 
-def loadnpy(path, steps=1):
+def loadnpy(path, steps=1, verbose=True):
     print('Data loading from: \n' + path)
     with np.load(path, allow_pickle=True) as data:
         info_dictionary = data['info'].tolist()
-        print(f'Metadata :\n {info_dictionary.keys()}')
         inputs = data['inputs'][::steps]
         outputs = data['outputs'][::steps]
-        print(f'--> Shape of INPUTS: {inputs.shape}')
-        print(f'--> Shape of OUTPUTS: {outputs.shape}')
+        if verbose:
+            print(f'Metadata :\n {info_dictionary.keys()}')
+            print(f'--> Shape of INPUTS: {inputs.shape}')
+            print(f'--> Shape of OUTPUTS: {outputs.shape}')
         assert outputs.shape[0] == inputs.shape[0],\
             ValueError('Input/Output data size mismatch!')
     return inputs, outputs, info_dictionary

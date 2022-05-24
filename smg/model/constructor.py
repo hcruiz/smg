@@ -46,6 +46,31 @@ class FCNN(nn.Module):
         return self.model(x)
 
 
+class LinPyr(torch.nn.Module):
+    """A model class to create linear-pyramidal neural networks.
+    Args:
+        configs : dictionary with
+                    'in_features' -> input dimension,
+                    'hidden_layers' -> a list of size of each hidden layer,
+                    'out_features' -> output dimension
+        activation : activation function; assumes _get_name() method exist
+
+    """
+
+    def __init__(self, configs, activation=nn.ReLU(), verbose=True):
+        super().__init__()
+        self.model_info = configs
+        self.linear = torch.nn.Linear(
+            self.model_info['in_features'], self.model_info['out_features'])
+        self.pyram = FCNN(configs, activation=activation, verbose=verbose)
+
+        if TorchHandler.device == torch.device('cuda'):
+            self.linear.cuda()
+            if verbose: print("--->> Model sent to CUDA <<---")
+
+    def forward(self, x):
+        return self.linear(x)*self.pyram(x)
+
 if __name__ == '__main__':
     configs = {
         "hidden_layers": [
