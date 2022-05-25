@@ -1,5 +1,5 @@
 '''
-Library that handles saving and loading data from smg.
+Library that handles saving and loading data.
 '''
 import os
 import time
@@ -20,35 +20,9 @@ def save_npz(data_directory, file_name, inputs, outputs, configs):
     np.savez(save_to, inputs=inputs, outputs=outputs, info=configs)
 
 
-# filename, overwrite=False, timestamp=True, **kwargs):
-def save(mode, file_path, **kwargs):
-   # if timestamp:
-   #     path = create_directory_timestamp(path, 'experiment', overwrite=overwrite)
-   # else:
-   #     path = create_directory(path, overwrite=overwrite)
-   # file_path = os.path.join(path, filename)
-
-    if mode == 'numpy':
-        np.savez(file_path, **kwargs)
-    elif not kwargs['data']:
-        raise ValueError(f"Value dictionary is missing in kwargs.")
-    else:
-        if mode == 'configs':
-            save_configs(kwargs['data'], file_path)
-        elif mode == 'pickle':
-            save_pickle(kwargs['data'], file_path)
-        elif mode == 'torch':
-            save_torch(kwargs['data'], file_path)
-        else:
-            raise NotImplementedError(
-                f"Mode {mode} is not recognised. Please choose a value between 'numpy', 'torch', 'pickle' and 'configs'.")
-    # return path
-
-
 def save_pickle(pickle_data, file_path):
     with open(file_path, "wb") as f:
         pickle.dump(pickle_data, f)
-        f.close()
 
 
 def save_torch(torch_model, file_path):
@@ -67,7 +41,7 @@ def savemodel(path, name, model):
     Saves a torch model on eval mode and in cpu.
     """
     model.eval()
-    # model.to('cpu')
+    model.to('cpu')
     state_dic = model.state_dict()
     file_path = os.path.join(path, name + '.pt')
     torch.save(state_dic, file_path)
@@ -92,7 +66,13 @@ def save_configs(configs, file):
             if type(configs[key]) is np.ndarray:
                 configs[key] = configs[key].tolist()
         json.dump(configs, f, indent=4)
-        f.close()
+# TODO: Simplify/merge savejason and save_configs
+
+
+def savejson(path, name, dict):
+    file_path = os.path.join(path, name + '.json')
+    with open(file_path, "w") as write_to:
+        json.dump(dict, write_to, indent=4)
 
 
 def create_directory(path, overwrite=False):
@@ -112,9 +92,3 @@ def create_directory_timestamp(path, name, overwrite=False):
     datetime = time.strftime("%Y_%m_%d_%H%M%S")
     path = os.path.join(path, name + '_' + datetime)
     return create_directory(path, overwrite=overwrite)
-
-
-def savejson(path, name, dict):
-    file_path = os.path.join(path, name + '.json')
-    with open(file_path, "w") as write_to:
-        json.dump(dict, write_to, indent=4)

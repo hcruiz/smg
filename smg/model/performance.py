@@ -11,6 +11,16 @@ from smg.model.pytorch import TorchHandler
 
 
 def mse(model, data):
+    '''Calculates the mean-squared-error loss of a given model using the 
+    implementation in torch.
+    Args:
+        model: a torch model
+        data: data containing input/target pairs
+    Returns:
+        error: MSE value
+        predictions: outputs of the model
+'''
+
     loss = torch.nn.MSELoss()
     model.eval()
     with torch.no_grad():  # is this needed?
@@ -24,15 +34,16 @@ def datasize_swipe(fractions, module, configs):
     '''Performs several training runs for different sizes of the data partitions
     and a given model class and configs.
     Args: 
-        fractions: fractions of original data used
+        fractions: Fractions of original data used.
         module: Model class to construct the model.
         configs: Configuration dictionary to generate models.
 
     Returns:
         Dictionary with (key,value) pairs. 
-        'costs': Val cost profile per trial; numpy array, size (trials,epochs)
-        'models': list with trained models
-        'size_data': size of the data used from training
+        'costs': Validation cost profile per trial; numpy array, size (trials,epochs).
+        'models': List with trained models.
+        'size_data': Size of the data used from training.
+        'time' : List with the training time in seconds.
     '''
     trials = len(fractions)
     smg = SMG(configs)
@@ -49,7 +60,6 @@ def datasize_swipe(fractions, module, configs):
 
     for run in looper:
         cut = int(np.ceil(fractions[run]*pop_size))
-        # print(f"Training with {cut} samples")
         indices = np.random.permutation(pop_size)[:cut]
         subset = torch.utils.data.Subset(dataset, indices)
         smg.set_dataloader(subset, verbose=False)
@@ -58,7 +68,6 @@ def datasize_swipe(fractions, module, configs):
 #       Set epochs s.t. nr of updates are similar across different runs
         if run == 0:
             nr_updates = configs["training"]["nr_epochs"]*nrbatches
-            # print(f"Total number of updates: {nr_updates}")
         else:
             configs["training"]["nr_epochs"] = int(
                 np.ceil(nr_updates/nrbatches))
@@ -80,10 +89,10 @@ def datasize_swipe(fractions, module, configs):
 
 
 def batchsize_swipe(bsize, module, configs):
-    '''Performs several training runs with with different values of the batch size
+    '''Performs several training runs with different values of the batch size
     for a given model class and configs.
     Args: 
-        bsize: a list containing the size of each batch.
+        bsize: List containing the batch sizes for each run.
         module: Model class to construct the model.
         configs: Configuration dictionary to build the model.
 
@@ -92,7 +101,6 @@ def batchsize_swipe(bsize, module, configs):
         'costs': Val cost profile per trial; numpy array, size (trials,epochs)
         'models': list with trained models
         'training_time': Time spent in training each case.
-
     '''
     trials = len(bsize)
     smg = SMG(configs)
@@ -135,8 +143,8 @@ def lr_swipe(lr_list, module, configs):
 
     Returns:
         Dictionary with (key,value) pairs. 
-        'costs': Val cost profile per trial; numpy array, size (trials,epochs)
-        'models': list with trained models
+        'costs': Validation cost profile per trial; numpy array, size (trials,epochs)
+        'models': List with trained models
 
     '''
     trials = len(lr_list)
@@ -166,10 +174,10 @@ def lr_swipe(lr_list, module, configs):
 
 
 def bslr_swipe(bs_list, lr_list, module, configs, end_epochs=10):
-    '''Performs several training runs with different values of the batchsize and
-    learning rate for a given model class and configs.
+    '''Performs several training runs with different values of the batch size and
+    learning rate for a given model class and configs. 
     Args: 
-        bs_list: List containing the size of each batch.
+        bs_list: List containing the batch sizes for each run.
         lr_list: List with values of learning rate for each run.
         module: Model class to construct the model.
         configs: Configuration dictionary to build the model.
@@ -178,10 +186,9 @@ def bslr_swipe(bs_list, lr_list, module, configs, end_epochs=10):
         mean val. cost.
     Returns:
         Dictionary with (key,value) pairs. 
-        'costs_grid': Mean val. costs of the last window with end_epochs
+        'costs_grid': Mean val. costs given the last window with end_epochs
         'training_time': Time spend in training each case.
-        'costs_profiles': Profile of val. costs over epochs for each case; 
-        numpy array, size (trials,epochs).
+        'costs_profiles': Profile of val. costs over epochs for each case; numpy array, size (trials,epochs).
 
     '''
     lr_trials = len(lr_list)
@@ -233,7 +240,7 @@ if __name__ == '__main__':
     configs["training"]["nr_epochs"] = 3
     configs["data"]["location"] = "tmp/example_data/example_1/processed_data.npz"
     configs["data"]["batch_size"] = 2048
-    configs["rootdir"] = "tmp/DUMP/test_performance"
+    configs["rootdir"] = "tmp/DUMP/test"
 
     # fracs = [0.025, 0.01]
     # datasize_swipe(fracs, FCNN, configs)
