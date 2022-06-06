@@ -14,7 +14,7 @@ Tools to generate surrogate models of nanoelectronic devices such as dopant and 
         
 ## A lightweight model for DNPUs
 Use a linear-pyramidal architecture for the DNPU SM if the model size matters. I found a extremely lightweight architecture that reduces the size of the model to around 82% of the original model, which was published [here](https://www.nature.com/articles/s41565-020-00779-y). This lightweight model is not published but **if you want to use it, please cite this repository**.
-The model (see [notebook “Lightweight Model”](./notebooks/Lightweight Model.ipynb) is composed of two parts that are multiplied to get the output current prediction, a linear layer that weights the inputs and a pyramidal module that gives the non-linearity. More formally, the network is given by $y(\vec{x})=(\vec{w}\dot\vec{x})F(\vec{x})$ where $F(\vec{x})$ is a feedforward neural network with four layers of width [70, 50, 30, 15] and ReLU activation, and $\vec{w}$ are parameters of a linear layer mapping $\vec{x}$ to a scalar.
+The model (see [notebook “Lightweight Model”](./notebooks/Lightweight Model.ipynb) is composed of two parts that are multiplied to get the output current prediction, a linear layer that weights the inputs and a pyramidal module that gives the non-linearity. More formally, the network is given by $y(\vec{x})=(\vec{w}\cdot\vec{x})F(\vec{x})$ where $F(\vec{x})$ is a feedforward neural network with four layers of width [70, 50, 30, 15] and ReLU activation, and $\vec{w}$ are parameters of a linear layer mapping $\vec{x}$ to a scalar.
 
 ## To Do's:
 
