@@ -1,0 +1,26 @@
+{
+    "rootdir": "/home/hruiz/Documents/PROJECTS/BRAINS/projects/lightweight-model/results/LinPyr",
+    "data": {
+        "location": "../tmp/example_data/example_1/processed_data.npz",
+        "steps": 3,
+        "batch_size": 256,
+        "amplification": 28.5
+    },
+    "model": {
+        "hidden_layers": [
+            70,
+            50,
+            30,
+            15
+        ],
+        "in_features": 7,
+        "out_features": 1,
+        "activation": "ReLU"
+    },
+    "training": {
+        "nr_epochs": 100,
+        "learning_rate": 0.0004,
+        "save_interval": false,
+        "optimiser": "torch.optim.adam"
+    }
+}
